@@ -7,19 +7,23 @@
 #include "Math/Color.h"
 #include "Math/Transform.h"
 #include "Graphics/Shape.h"
+#include "Object/Actor.h"
+#include "Actors/Enemy.h"
+#include "Actors/Player.h"
 #include <iostream>
 #include <vector>
 #include <string>
 
 const size_t NUM_POINTS = 40;
-float speed = 300;
 
-std::vector<nc::Vector2> points = { { 0, -3 }, { 3, 3 }, { -1, 3 }, {4, -3}, {0 , -3} };
-nc::Color color{0, 1, 1};
-nc::Shape shape;
-//nc::Shape shape{ points, color };
+//nc::Actor player;
+//nc::Actor enemy;
 
-nc::Transform transform{ {400.0f, 300.0f}, 4.0f, 0.0f };
+nc::Player player;
+nc::Enemy enemy;
+
+float thrust = 300;
+nc::Vector2 velocity;
 
 float t{ 0 };
 
@@ -49,21 +53,8 @@ bool Update(float dt)
 	int x, y;
 	Core::Input::GetMousePos(x, y);
 
-	//nc::Vector2 target = nc::Vector2{ x, y };
-	//nc::Vector2 direction = target - position;
-	//direction.Normalize();
-
-	nc::Vector2 force{ 0,0 };
-	if (Core::Input::IsPressed('W')) { force = nc::Vector2::forward * speed * dt; }
-	nc::Vector2 direction = force;
-	direction = nc::Vector2::Rotate(direction, transform.angle);
-	transform.position += direction;
-
-	if (Core::Input::IsPressed('A')) {transform.angle -= (dt * nc::DegreesToRadians(360.0f));}
-	if (Core::Input::IsPressed('D')) {transform.angle += (dt * nc::DegreesToRadians(360.0f));}
-
-	transform.position = nc::Clamp(transform.position, { 0, 0 }, { 800, 600 });
-
+	player.Update(dt);
+	enemy.Update(dt);
 
 	return quit;
 }
@@ -77,16 +68,16 @@ void Draw(Core::Graphics& graphics)
 	float v = (std::sin(t) + 1.0f) * 0.5f;
 
 	nc::Color c = nc::Lerp(nc::Color{ 0, 0, 1 }, nc::Color{ 1, 0, 0 }, v);
-	nc::Color cc = nc::Lerp(nc::Color{ 1, 0, 0 }, nc::Color{ 0, 1, 0 }, v);
 	graphics.SetColor(c);
-	graphics.SetBackgroundColor(cc);
 
 	nc::Vector2 p = nc::Lerp(nc::Vector2{ 400, 300 }, nc::Vector2{ 0 , 0 }, v);
 	graphics.DrawString(p.x, p.y, "Last Starfighter");
 
 	if (gameOver) graphics.DrawString(400, 300, "Game Over");
 
-	shape.Draw(graphics, transform);
+
+	player.Draw(graphics);
+	enemy.Draw(graphics);
 
 }
 
@@ -96,7 +87,9 @@ int main()
 	std::cout << ticks / 1000 << std::endl;
 	prevTime = GetTickCount();
 
-	shape.Load("shape.txt");
+	player.Load("player.txt");
+	enemy.Load("enemy.txt");
+	enemy.SetTarget(&player);
 
 	char name[] = "CSC196";
 	Core::Init(name, 800, 600);
