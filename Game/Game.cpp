@@ -1,6 +1,3 @@
-// Game.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include "core.h"
 #include "Math/MathStuff.h"
 #include "Math/Random.h"
@@ -13,48 +10,81 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <list>
 
-const size_t NUM_POINTS = 40;
-
-//nc::Actor player;
-//nc::Actor enemy;
-
-nc::Player player;
-nc::Enemy enemy;
-
-float thrust = 300;
-nc::Vector2 velocity;
-
-float t{ 0 };
-
+std::list<nc::Actor*> actors;
 float frametime;
-float roundTime{ 0 };
-bool gameOver{ false };
+float spawnTimer = 0;
 
-DWORD prevTime;
-DWORD deltaTime;
+template <typename T>
+nc::Actor* GetActor()
+{
+	nc::Actor* result{nullptr};
+
+	for (nc::Actor* actor : actors)
+	{
+		result = dynamic_cast<T*>(actor);
+		if (result) break;
+	}
+
+	return result;
+}
+
+template <typename T>
+std::vector<nc::Actor*> GetActors()
+{
+	std::vector<nc::Actor*> results;
+
+	for (nc::Actor* actor : actors)
+	{
+		T* result = dynamic_cast<T*>(actor);
+		if (result)
+		{
+			results.push_back(result);
+		}
+	}
+
+	return results;
+}
 
 bool Update(float dt)
 {
-	DWORD time = GetTickCount();
-	deltaTime = time - prevTime;
-	prevTime = time;
-	
-	t = (t + dt * 0.5f);
 
 	frametime = dt;
-	roundTime += dt;
-	//if (roundTime >= 5) gameOver = true;
-
-	if (gameOver) dt /= 2;
 
 	bool quit = Core::Input::IsPressed(Core::Input::KEY_ESCAPE);
 
-	int x, y;
-	Core::Input::GetMousePos(x, y);
+	if (Core::Input::IsPressed(VK_SPACE))
+	{
+		auto removeActors = GetActors<nc::Enemy>();
+		for (auto actor : removeActors)
+		{
+			auto iter = std::find(actors.begin(), actors.end(), actor);
+			delete* iter;
+			actors.erase(iter);
+		}
+	}
 
-	player.Update(dt);
-	enemy.Update(dt);
+	spawnTimer += dt;
+	if (spawnTimer >= 3.0f)
+	{
+		spawnTimer = 0;
+
+
+		// add enemy to scene
+		nc::Actor* actor = new nc::Enemy;
+		actor->Load("enemy.txt");
+		dynamic_cast<nc::Enemy*>(actor)->SetTarget(GetActor<nc::Player>());
+		actor->GetTransform().position = nc::Vector2{ nc::random(0, 800), nc::random(0, 600) };
+		dynamic_cast<nc::Enemy*>(actor)->SetThrust(nc::random(50, 100));
+
+		actors.push_back(actor);
+	}
+
+	for (nc::Actor* actor : actors)
+	{
+		actor->Update(dt);
+	}
 
 	return quit;
 }
@@ -63,33 +93,31 @@ void Draw(Core::Graphics& graphics)
 {
 	graphics.DrawString(10, 10, std::to_string(frametime).c_str());
 	graphics.DrawString(10, 20, std::to_string(1.0f / frametime).c_str());
-	graphics.DrawString(10, 30, std::to_string(deltaTime / 1000.0f).c_str());
 
-	float v = (std::sin(t) + 1.0f) * 0.5f;
-
-	nc::Color c = nc::Lerp(nc::Color{ 0, 0, 1 }, nc::Color{ 1, 0, 0 }, v);
-	graphics.SetColor(c);
-
-	nc::Vector2 p = nc::Lerp(nc::Vector2{ 400, 300 }, nc::Vector2{ 0 , 0 }, v);
-	graphics.DrawString(p.x, p.y, "Last Starfighter");
-
-	if (gameOver) graphics.DrawString(400, 300, "Game Over");
-
-
-	player.Draw(graphics);
-	enemy.Draw(graphics);
-
+	for (nc::Actor* actor : actors)
+	{
+		actor->Draw(graphics);
+	}
 }
 
 int main()
 {
-	DWORD ticks = GetTickCount();
-	std::cout << ticks / 1000 << std::endl;
-	prevTime = GetTickCount();
+	nc::Player* player = new nc::Player;
 
-	player.Load("player.txt");
-	enemy.Load("enemy.txt");
-	enemy.SetTarget(&player);
+	player->Load("player.txt");
+	actors.push_back(player);
+
+	for (int i = 0; i < 100; i++)
+	{
+		nc::Actor* enemy = new nc::Enemy;
+		enemy->Load("enemy.txt");
+		dynamic_cast<nc::Enemy*>(enemy)->SetTarget(player);
+		enemy->GetTransform().position = nc::Vector2{ nc::random(0, 800), nc::random(0, 600) };
+		dynamic_cast<nc::Enemy*>(enemy)->SetThrust(nc::random(50, 100));
+
+		actors.push_back(enemy);
+	}
+	
 
 	char name[] = "CSC196";
 	Core::Init(name, 800, 600);

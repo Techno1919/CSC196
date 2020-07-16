@@ -7,10 +7,13 @@ namespace nc
 	class Enemy : public nc::Actor
 	{
 	public:
-		virtual bool Load(const std::string& filename) override;
+		Enemy() = default;
+		virtual ~Enemy() {};
 
+		virtual bool Load(const std::string& filename) override;
 		virtual void Update(float dt) override;
 
+		void SetThrust(float thrust) { m_thrust = thrust; }
 		void SetTarget(Actor* actor) { m_target = actor; }
 
 	protected:
