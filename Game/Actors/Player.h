@@ -8,11 +8,15 @@ namespace nc
 	public:
 		virtual bool Load(const std::string& filename) override;
 
+		virtual eType GetType() { return eType::PLAYER; }
+
 		virtual void Update(float dt) override;
 
 	protected:
 		float m_thrust{ 300 };
-		float rotationRate{};
+		float rotationRate{ 360.0f };
+		float m_fireRate{ 0.25f };
+		float m_fireTimer{ 0.0f };
 		nc::Vector2 m_velocity{};
 	};
 }
