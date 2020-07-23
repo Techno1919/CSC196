@@ -11,6 +11,8 @@ namespace nc
 		virtual eType GetType() { return eType::PLAYER; }
 
 		virtual void Update(float dt) override;
+		
+		virtual void OnCollision(Actor* actor);
 
 	protected:
 		float m_thrust{ 300 };

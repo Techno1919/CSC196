@@ -3,6 +3,8 @@
 #include <vector>
 #include <list>
 
+class Game;
+
 namespace nc
 {
 	class Scene
@@ -48,7 +50,11 @@ namespace nc
 			return results;
 		}
 
+		void SetGame(Game* game) { m_game = game; }
+		Game* GetGame() { return m_game; }
+
 	private:
+		Game* m_game;
 		std::list<class Actor*> m_actors;
 	};
 }

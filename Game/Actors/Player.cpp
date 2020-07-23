@@ -3,6 +3,7 @@
 #include "Math/MathStuff.h"
 #include "Object/Scene.h"
 #include "Graphics/ParticleSystem.h"
+#include "../Game.h"
 #include <fstream>
 
 bool nc::Player::Load(const std::string& filename)
@@ -70,5 +71,13 @@ void nc::Player::Update(float dt)
 
 	m_transform.Update();
 
+}
+
+void nc::Player::OnCollision(Actor* actor)
+{
+	if (actor->GetType() == eType::ENEMY)
+	{
+		m_scene->GetGame()->SetState(Game::eState::GAME_OVER);
+	}
 }
 
