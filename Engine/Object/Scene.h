@@ -20,7 +20,7 @@ namespace nc
 		template <typename T>
 		T* GetActor() 
 		{
-			nc::Actor* result{ nullptr };
+			T* result{ nullptr };
 
 			for (nc::Actor* actor : m_actors)
 			{

@@ -2,6 +2,7 @@
 #include "Projectile.h"
 #include "Math/MathStuff.h"
 #include "Object/Scene.h"
+#include "Graphics/ParticleSystem.h"
 #include <fstream>
 
 bool nc::Player::Load(const std::string& filename)
@@ -59,6 +60,13 @@ void nc::Player::Update(float dt)
 	if (m_transform.position.x < 0) m_transform.position.x = 800;
 	if (m_transform.position.y > 600) m_transform.position.y = 0;
 	if (m_transform.position.y < 0) m_transform.position.y = 600;
+
+
+	if (force.Length() > 0)
+	{
+		g_particleSystem.Create(m_transform.position, m_transform.angle + nc::PI, 20, 1, nc::Color::blue, 1.0f, 100, 200);
+	}
+
 
 	m_transform.Update();
 

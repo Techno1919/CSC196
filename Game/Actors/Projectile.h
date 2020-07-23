@@ -27,6 +27,7 @@ namespace nc
 
 	protected:
 		float m_thrust{ 0.0f };
+		float m_lifetime{ 3 };
 	};
 
 }

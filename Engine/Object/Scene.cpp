@@ -8,12 +8,6 @@ void nc::Scene::Startup()
 
 void nc::Scene::Shutdown()
 {
-	for (auto actor : m_actors)
-	{
-		auto iter = std::find(m_actors.begin(), m_actors.end(), actor);
-		delete* iter;
-		m_actors.erase(iter);
-	}
 	m_actors.clear();
 }
 
@@ -26,7 +20,7 @@ void nc::Scene::Update(float dt)
 		for (size_t j = i + 1; j < actors.size(); j++)
 		{
 			float distance = Vector2::Distance(actors[i]->GetTransform().position, actors[j]->GetTransform().position);
-			if (distance <= 10)
+			if (distance <= (actors[i]->GetRadius() + actors[j]->GetRadius()))
 			{
 				actors[i]->OnCollision(actors[j]);
 				actors[j]->OnCollision(actors[i]);
